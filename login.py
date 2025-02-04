@@ -32,16 +32,22 @@ def move_latest_file(source, target):
         print(f"Fájl áthelyezve: {latest_file} → {target}")
 
 def downloadFleetData():
-    
+   # user_name = os.environ.get("USERNAME") or os.getlogin()
+    #print(user_name)
+
     target_folder = r"\\hucbrfs\Coolbridge\COMMON\ERP\BUSINESS_INTELLIGENCE\source_raw\fleet_management"
     download_path = "C:\\Users\\npap\\Downloads"
 
+    #chrome_profile_path = f"C:\\Users\\{user_name}\\AppData\\Local\\Google\\Chrome\\User Data"
+
     options = webdriver.ChromeOptions()
-   # options.add_argument("--headless=new")  # Újabb headless mód
-    options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+    # options.add_argument("--headless=new")  # Újabb headless mód
+    #options.add_argument(f"user-data-dir={chrome_profile_path}")
+    options.add_argument("profile-directory=Default")  # Ha más profilnév, cseréld ki!
     options.add_argument("--allow-running-insecure-content")  # Allow insecure content
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
     options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://tata.fleetmanager.guentner.local/")  # site's domain
-    options.add_experimental_option("useAutomationExtension", False)    
     options.add_experimental_option("prefs", {
     "download.default_directory": download_path.replace("\\", "/"),
     "download.prompt_for_download": False,
@@ -50,9 +56,23 @@ def downloadFleetData():
     "safebrowsing.disable_download_protection": True  # Tiltsd le a letöltésvédelmet
     })
 
+
+    # WebDriver elindítása
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    wait = WebDriverWait(driver, 5)
+    time.sleep(5)
+    driver.refresh()
+    time.sleep(2)
     driver.get("http://tata.fleetmanager.guentner.local/")
+    time.sleep(2)
+    print("Aktuális oldal címe:", driver.title)
+
+
+    #------------
+
+
+    #------------
+
+
     time.sleep(5)
     driver.refresh()
     time.sleep(2)
