@@ -98,14 +98,15 @@ def downloadFleetData():
 
     collapse_button = wait.until(EC.element_to_be_clickable((By.ID, "ReportsIndexSearch_Collapse")))
 
-    collapse_icon = driver.find_element(By.CSS_SELECTOR, "#ReportsIndexSearch_Collapse i")
+    collapse_Reports = driver.find_element(By.CSS_SELECTOR, "#ReportsIndexSearch_Collapse i")
 
-    icon_class = collapse_icon.get_attribute("class")
+    icon_Reports = collapse_Reports.get_attribute("class")
 
-    if "fa-plus" in icon_class:
+    if "fa-plus" in icon_Reports:
         print("A keresési panel NINCS LENYITVA.")
-        collapse_icon.click() 
-    elif "fa-minus" in icon_class:
+        collapse_Reports.click() 
+        print("A Fuel supplier panelt LENYITOTTAM.")
+    elif "fa-minus" in icon_Reports:
         print("A keresési panel LE VAN LENYITVA.")
        
 
@@ -190,7 +191,7 @@ def downloadFleetData():
     search_button.click()
     time.sleep(2)
 
-    # Tables & Rows
+    # Tables & Rows - Guentner internal Gas supplier
     table_Suppliers = driver.find_element(By.ID, "CostPerSupplierTable_wrapper")
     rows = table_Suppliers.find_elements(By.TAG_NAME, "tr")
 
@@ -214,6 +215,86 @@ def downloadFleetData():
 
     wait_for_download(download_path)
     move_latest_file(download_path, target_folder)
+
+    #többi letöltése
+
+    #collapse_fuelSupplier = driver.find_element(By.CSS_SELECTOR, "#CostPerSupplier_Collapse i")
+    collapse_fuelSupplier = driver.find_element(By.XPATH, "//div[h3[contains(text(), 'Fuel supplier summary')]]//button[@id='CostPerSupplier_Collapse']/i")
+
+
+    icon_fuelSupplier = collapse_fuelSupplier.get_attribute("class")
+
+    if "fa-plus" in icon_fuelSupplier:
+        print("A Fuel supplier panel NINCS LENYITVA.")
+        collapse_fuelSupplier.click() 
+        print("A Fuel supplier panelt LENYITOTTAM.")
+    elif "fa-minus" in icon_fuelSupplier:
+        print("A Fuel supplier panel LE VAN LENYITVA.")
+
+
+# Tables & Rows -  Shell
+    table_Suppliers = driver.find_element(By.ID, "CostPerSupplierTable_wrapper")
+    rows = table_Suppliers.find_elements(By.TAG_NAME, "tr")
+
+    for row in rows:
+        if "MOL" in row.text:
+            button = row.find_element(By.TAG_NAME, "button")
+            button.click()
+            break  
+    time.sleep(5)
+
+
+    box_headers = driver.find_elements(By.CLASS_NAME, "box-header")
+
+    for box in box_headers:
+        if "MOL" in box.text:
+            export_button = box.find_element(By.XPATH, ".//button[contains(text(), 'Export Excel')]")
+            export_button.click()
+            break  
+
+    time.sleep(15)
+
+    wait_for_download(download_path)
+    move_latest_file(download_path, target_folder)
+
+
+    if "fa-plus" in icon_fuelSupplier:
+        print("A Fuel supplier panel NINCS LENYITVA.")
+        icon_fuelSupplier.click() 
+        print("A Fuel supplier panelt LENYITOTTAM.")
+    elif "fa-minus" in icon_fuelSupplier:
+        print("A Fuel supplier panel LE VAN LENYITVA.")
+
+
+# Tables & Rows -  Shell
+    table_Suppliers = driver.find_element(By.ID, "CostPerSupplierTable_wrapper")
+    rows = table_Suppliers.find_elements(By.TAG_NAME, "tr")
+
+    for row in rows:
+        if "Shell Hungary Kft." in row.text:
+            button = row.find_element(By.TAG_NAME, "button")
+            button.click()
+            break  
+    time.sleep(5)
+
+
+    box_headers = driver.find_elements(By.CLASS_NAME, "box-header")
+
+    for box in box_headers:
+        if "Shell Hungary Kft." in box.text:
+            export_button = box.find_element(By.XPATH, ".//button[contains(text(), 'Export Excel')]")
+            export_button.click()
+            break  
+
+    time.sleep(15)
+
+    wait_for_download(download_path)
+    move_latest_file(download_path, target_folder)
+
+
+
+
+    #
 
     return driver
 if __name__ == "__main__":
