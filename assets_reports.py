@@ -14,7 +14,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 def close_existing_chrome():
     """Bezárja az összes futó Chrome böngészőt Windows rendszeren."""
     try:
-        os.system("taskkill /IM chrome.exe /F")  # Minden Chrome példányt bezár
+        os.system("taskkill /IM chrome.exe /F")  
         print("Minden Chrome böngészőt bezártam.")
     except Exception as e:
         print(f"Hiba történt a Chrome bezárásakor: {e}")
@@ -39,22 +39,23 @@ def move_latest_file(source, target):
         shutil.move(latest_file, os.path.join(target, os.path.basename(latest_file)))
         print(f"Fájl áthelyezve: {latest_file} → {target}")
 
-def ensure_fuel_supplier_panel_open(driver):
-    """Ellenőrzi és szükség esetén lenyitja a Fuel Supplier panelt."""
+def ensure_service_product_panel_open(driver):
+    """Ellenőrzi és szükség esetén lenyitja a Service paroduct details panelt."""
+    print("ide bejön")
     try:
         wait = WebDriverWait(driver, 10)
-        collapse_fuelSupplier = wait.until(EC.presence_of_element_located((By.XPATH, "//div[h3[contains(text(), 'Fuel supplier summary')]]//button[@id='CostPerSupplier_Collapse']/i")))
-        icon_fuelSupplier = collapse_fuelSupplier.get_attribute("class")
+        collapse_serviceProductDetails = wait.until(EC.presence_of_element_located((By.XPATH, "//div[h3[contains(text(), 'Service products details')]]//button[@id='ServiceProductsDetailsList_Collapse']/i")))
+        icon_serviceProductDetails = collapse_serviceProductDetails.get_attribute("class")
 
-        if "fa-plus" in icon_fuelSupplier:
-            print("A Fuel supplier panel NINCS LENYITVA.")
-            collapse_fuelSupplier.click()
+        if "fa-plus" in icon_serviceProductDetails:
+            print("A Service product details panel NINCS LENYITVA.")
+            collapse_serviceProductDetails.click()
             time.sleep(3)  
-            print("A Fuel supplier panelt LENYITOTTAM.")
-        elif "fa-minus" in icon_fuelSupplier:
-            print("A Fuel supplier panel LE VAN LENYITVA.")
+            print("A Service product details panelt LENYITOTTAM.")
+        elif "fa-minus" in icon_serviceProductDetails:
+            print("A Service product details panel LE VAN LENYITVA.")
     except Exception as e:
-        print(f"Hiba történt a Fuel supplier panel ellenőrzésekor: {e}")
+        print(f"Hiba történt a Service product details panel ellenőrzésekor: {e}")
 
 def downloadFleetData():
     close_existing_chrome()
@@ -114,14 +115,18 @@ def downloadFleetData():
 
     time.sleep(2)
 
-    fuel_supplier_summary = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@id='divFuelSupplierSummary']")))
-    fuel_supplier_summary.click()
+    service_product_details = WebDriverWait(driver, 10).until(
+    EC.element_to_be_clickable((By.XPATH, "//div[@id='divServiceCategoryProductCost'][.//h5/strong[contains(text(), 'Service products details')]]")))
+    driver.execute_script("arguments[0].scrollIntoView();", service_product_details) 
+    time.sleep(1)  
+    service_product_details.click()
+    print("RÁKATTINTOTT A SPD")
 
     time.sleep(3)
 
-    #collapse_button = wait.until(EC.element_to_be_clickable((By.ID, "ReportsIndexSearch_Collapse")))
-
-    collapse_Reports = driver.find_element(By.CSS_SELECTOR, "#ReportsIndexSearch_Collapse i")
+    collapse_Reports = WebDriverWait(driver, 10).until(
+    EC.element_to_be_clickable((By.CSS_SELECTOR, "#ReportsIndexSearch_Collapse i")))
+    print("megtaláltam a collapse-t")
 
     icon_Reports = collapse_Reports.get_attribute("class")
 
@@ -208,72 +213,58 @@ def downloadFleetData():
     end_date_input.send_keys(Keys.ENTER)  
     time.sleep(3)
     
-    search_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
+    search_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", search_button)
+    time.sleep(1)  
     search_button.click()
     time.sleep(2)
 
-    # Tables & Rows -  Shell
-    companies = ["Guentner internal Gas supplier","MOL", "Shell Hungary Kft." ]
+    ensure_service_product_panel_open(driver)  
 
-    for company in companies:
-        ensure_fuel_supplier_panel_open(driver)  
-    
-        table_Suppliers = driver.find_element(By.ID, "CostPerSupplierTable")
-        rows = table_Suppliers.find_elements(By.TAG_NAME, "tr")
+    all_downloaded = True 
+
+    time.sleep(5)
+
+    try:
+        # Stale element error prevention
+        export_ServicePD_button = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "exportExcelServiceProductsDetails"))
+        )
+        wait.until(EC.element_to_be_clickable((By.ID, "exportExcelServiceProductsDetails")))
+
+        print("🔍 Megtalált elem HTML kódja:")
+        print(export_ServicePD_button.get_attribute("outerHTML"))
+
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", export_ServicePD_button)
+        time.sleep(1)  
+
+        # JavaScript if above is error
+        driver.execute_script("arguments[0].click();", export_ServicePD_button)
+        print("✅ Rákattintottam a Service PD Export Excel gombjára.")
+
+        time.sleep(15)  
         
-        found = False 
-        all_downloaded = True 
-        
-        for row in rows:
-            if company in row.text:  
-                found = True  
+        if wait_for_download(download_path):
+            move_latest_file(download_path, target_folder)
+        else:
+            all_downloaded = False  
 
-                try:
-                    button = row.find_element(By.XPATH, ".//button[contains(text(), 'Details')]")
-                    button.click()
-                    print(f"Rákattintottam a {company} Details gombjára.")
-                    time.sleep(5)  
-                    
-                    box_headers = driver.find_elements(By.CLASS_NAME, "box-header") # Box header where the company name is 
+        ensure_service_product_panel_open(driver)
 
-                    for box in box_headers:
-                        if company in box.text:  
-                            try:
-                                export_button = box.find_element(By.XPATH, ".//button[contains(text(), 'Export Excel')]")
-                                export_button.click()
-                                print(f"Rákattintottam a {company} Export Excel gombjára.")
-                                time.sleep(15)  
-
-                                if wait_for_download(download_path):
-                                    move_latest_file(download_path, target_folder)
-                                else:
-                                    all_downloaded = False  # Letöltés sikertelen
-                            
-                                ensure_fuel_supplier_panel_open(driver)
-
-                            except Exception as e:
-                                print(f"Hiba történt az Export Excel gombnál ({company}): {e}")
-                                all_downloaded = False  # Hiba történt, nem sikerült letölteni
-                            break 
-
-                    break  
-                except Exception as e:
-                    print(f"Hiba történt a {company} sorban: {e}")
-                    all_downloaded = False
-                    ensure_fuel_supplier_panel_open(driver)
-        if not found:  
-            print(f"Nem találtam meg a {company}-t a táblázatban.")
-            ensure_fuel_supplier_panel_open(driver)
+    except Exception as e:
+        print(f"❌ Hiba történt az Export Excel gombnál: {e}")
+    all_downloaded = False
 
     time.sleep(4)
-    
+        
     if all_downloaded:
-        print("🔥Supplier reports adatai sikeresen letöltve! 🔥")
+        print("🔥Assets reports adatai sikeresen letöltve! 🔥")
     
 
     time.sleep(15)
 
     return driver
+
 if __name__ == "__main__":
     driver = None
     try:

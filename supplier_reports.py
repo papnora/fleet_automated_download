@@ -268,7 +268,7 @@ def downloadFleetData():
     time.sleep(4)
     
     if all_downloaded:
-        print("🔥 Mindhárom cég adatait sikeresen letöltöttük! 🔥")
+        print("🔥Supplier reports adatai sikeresen letöltve! 🔥")
     
 
     time.sleep(15)
