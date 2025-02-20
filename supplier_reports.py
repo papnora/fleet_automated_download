@@ -274,6 +274,7 @@ def downloadFleetData():
     time.sleep(15)
 
     return driver
+
 if __name__ == "__main__":
     driver = None
     try:
