@@ -22,13 +22,14 @@ def close_existing_chrome():
 def setup_browser():
     """Elindítja és beállítja a Chrome böngészőt, majd megnyitja a szükséges menüket."""
     user_name = os.environ.get("USERNAME") or os.getlogin()
+    print("")
     print("A Fleet KPI adatok letöltése folyamatban van, kérlek várj.")
-    print(f"USERNAME: {user_name}")
+    print(f"👤 USERNAME: {user_name}")
 
     chrome_profile_path = f"C:\\Users\\{user_name}\\AppData\\Local\\Google\\Chrome\\User Data"
     
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless=new")  # Újabb headless mód
+    options.add_argument("--headless=new")  # Újabb headless mód
     options.add_argument(f"user-data-dir={chrome_profile_path}")
     options.add_argument("profile-directory=Default")
     options.add_argument("--allow-running-insecure-content")
@@ -41,11 +42,18 @@ def setup_browser():
     driver.get("http://tata.fleetmanager.guentner.local/")
     wait = WebDriverWait(driver, 5)
     time.sleep(5)
+
+    interact_with_page(driver)
+    
+    return driver, user_name
+
+def interact_with_page(driver):
+    wait = WebDriverWait(driver, 5)
     
     try:
         lang_switch = wait.until(EC.element_to_be_clickable((By.ID, "enCulture")))
         lang_switch.click()
-        print("Nyelvváltás OK")
+        #print("Nyelvváltás OK")
     except Exception as e:
         print("Hiba történt a nyelvváltáskor:", e)
     
@@ -64,8 +72,7 @@ def setup_browser():
     
     reports_sub_menu = wait.until(EC.element_to_be_clickable((By.XPATH, "(//span[text()='Reports'])[2]/parent::a")))
     reports_sub_menu.click()
-    
-    time.sleep(2)
-    print("ITT OKÉ")
-    return driver, user_name
+
+    time.sleep(5)
+
 

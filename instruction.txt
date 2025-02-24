@@ -1,5 +1,5 @@
-a supplier_reports.py jó
-
-a piszkozat.py alakítani kell, hogy ne legyen redundáns
-
+Mentési mappa (áthelyezés):
 \\hucbrfs\Coolbridge\COMMON\ERP\BUSINESS_INTELLIGENCE\source_raw\fleet_management
+
+Headless mód: 
+chrome_utils.py fájlban az  # options.add_argument("--headless=new")  

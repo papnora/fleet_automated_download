@@ -7,38 +7,117 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 
 def get_today():
-    """Visszaadja a mai dátumot DD.MM.YYYY formátumban."""
     today = datetime.today()
-    day_today = today.strftime("%d")  # (DD)
-    month_today = today.strftime("%m")  # (MM)
-    year_today = today.strftime("%Y")  # (YYYY)
-
+    day_today = today.strftime("%d")  
+    month_today = today.strftime("%m")  
+    year_today = today.strftime("%Y") 
+    
+    print("")
     print(f"Aktuális dátum: {day_today}.{month_today}.{year_today}")
 
     return day_today, month_today, year_today
 
 def get_three_months_ago():
-    """Visszaadja a három hónappal ezelőtti dátumot DD.MM.YYYY formátumban."""
     three_months_ago = datetime.today() - timedelta(days=90)
-    day_3M = three_months_ago.strftime("%d")  # (DD)
-    month_3M = three_months_ago.strftime("%m")  # (MM)
-    year_3M = three_months_ago.strftime("%Y")  # (YYYY)
+    day_3M = three_months_ago.strftime("%d")  
+    month_3M = three_months_ago.strftime("%m") 
+    year_3M = three_months_ago.strftime("%Y")  
 
     print(f"Három hónappal ezelőtti dátum: {day_3M}.{month_3M}.{year_3M}")
+    print("")
     return day_3M, month_3M, year_3M
 
 def get_fixed_date():
-    """Visszaad egy fix dátumot (01.08.2022)."""
-    return "01.08.2022"
+    print(f"Fix dátum: 01.08.2022")
+    print("")
+    return "01", "08", "2022"
+
+def get_weekago():
+    last_week = datetime.today() - timedelta(weeks=1)
+    day_last_week = last_week.strftime("%d") 
+    month_last_week = last_week.strftime("%m")  
+    year_last_week = last_week.strftime("%Y") 
+    start_time = "00:01"
+
+    print(f"Egy héttel ezelőtti dátum: {day_last_week}.{month_last_week}.{year_last_week}.{start_time}")
+    print("")
+
+    return day_last_week, month_last_week, year_last_week, start_time
+
+def fill_week_date_field(driver, wait):
+    day_today, month_today, year_today = get_today()
+    day_last_week, month_last_week, year_last_week, start_time = get_weekago()
+    hour_today = datetime.now().strftime("%H")
+    minute_today = datetime.now().strftime("%M")
+
+    # Start Date Kitöltése
+    start_date_input = wait.until(EC.element_to_be_clickable((By.ID, "startDateWrapp")))
+    start_date_input.click()
+    time.sleep(1)
+    
+    start_date_input.send_keys(Keys.CONTROL + "a")  
+    start_date_input.send_keys(Keys.BACKSPACE)  
+    time.sleep(0.5)
+
+    start_date_input.send_keys(f"{day_last_week}.{month_last_week}.{year_last_week} {start_time}")
+    start_date_input.send_keys(Keys.ENTER)
+    time.sleep(1)
+
+    # End Date Kitöltése
+    end_date_input = wait.until(EC.element_to_be_clickable((By.ID, "endDateWrapp")))
+    end_date_input.click()
+    time.sleep(1)
+
+    end_date_input.send_keys(Keys.CONTROL + "a") 
+    end_date_input.send_keys(Keys.BACKSPACE)  
+    time.sleep(0.5)
+
+    end_date_input.send_keys(f"{day_today}.{month_today}.{year_today} {hour_today}:{minute_today}")
+    end_date_input.send_keys(Keys.ENTER)
+    time.sleep(1)
+
+
+    search_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
+    search_button.click()
+   
+    time.sleep(2)
+
+def fill_fix_date_field(driver, wait):
+    day_today, month_today, year_today = get_today()
+    day_fix, month_fix, year_fix = get_fixed_date()
+
+    start_date_input = wait.until(EC.element_to_be_clickable((By.ID, "startDateWrapp")))
+    start_date_input.click()
+    time.sleep(2)
+
+    start_date_input.send_keys(Keys.CONTROL + "a")
+    start_date_input.send_keys(Keys.BACKSPACE)
+    time.sleep(0.5)
+    
+    start_date_input.send_keys(f"{day_fix}.{month_fix}.{year_fix}")
+    start_date_input.send_keys(Keys.ENTER)
+    time.sleep(1)
+
+    end_date_input = wait.until(EC.element_to_be_clickable((By.ID, "endDateWrapp")))
+    end_date_input.click()
+    time.sleep(1)
+
+    end_date_input.send_keys(Keys.CONTROL + "a")
+    end_date_input.send_keys(Keys.BACKSPACE)
+    time.sleep(0.5)
+    
+    end_date_input.send_keys(f"{day_today}.{month_today}.{year_today}")
+    end_date_input.send_keys(Keys.ENTER)
+    time.sleep(1)
+
+    search_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
+    search_button.click()
+    time.sleep(2)
 
 def fill_date_field(driver, wait):
-    """
-    Kitölti a kezdő- és végdátum mezőket a három hónappal ezelőtti, illetve a mai dátummal.
-    """
     day_today, month_today, year_today = get_today()
     day_3M, month_3M, year_3M = get_three_months_ago()
 
-    # Kezdő dátum mező kitöltése (három hónappal ezelőtti dátum)
     start_date_input = wait.until(EC.element_to_be_clickable((By.ID, "startDateWrapp")))
     start_date_input.click()
     time.sleep(2)
@@ -66,7 +145,6 @@ def fill_date_field(driver, wait):
     start_date_input.send_keys(Keys.ENTER)
     time.sleep(2)
 
-    # Végdátum mező kitöltése (mai dátum)
     end_date_input = wait.until(EC.element_to_be_clickable((By.ID, "endDateWrapp")))
     end_date_input.click()
     time.sleep(2)
@@ -97,11 +175,10 @@ def fill_date_field(driver, wait):
     # Keresés gomb megnyomása
     search_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
     search_button.click()
+   
     time.sleep(2)
 
-
 def search_data(driver, wait):
-    """Megkeresi és rákattint a keresés gombra."""
     search_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='box-footer']//button[contains(text(), 'Search')]")))
     driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", search_button)
     search_button.click()

@@ -43,9 +43,37 @@ def ensure_panel_open(driver, panel_name, panel_xpath, button_xpath):
     except Exception as e:
         print(f"Hiba történt a {panel_name} panel ellenőrzésekor: {e}")
 
-
+#Asset report
 def ensure_service_product_panel_open(driver):
     ensure_panel_open(driver, 
                       "Service product details", 
                       "//div[h3[contains(text(), 'Service products details')]]", 
                       "//div[h3[contains(text(), 'Service products details')]]//button[@id='ServiceProductsDetailsList_Collapse']/i")
+
+def ensure_vehicle_service_panel_open(driver):
+    ensure_panel_open(driver, 
+                      "Vehicle in service", 
+                      "//div[h3[contains(text(), 'Vehicle in service')]]", 
+                      "//div[h3[contains(text(), 'Vehicle in service')]]//button[@id='VehicleService_Collapse']/i")
+
+#Forklift report
+def ensure_vehicle_electrical_consumption_panel_open(driver):
+    ensure_panel_open(driver, 
+                      "Vehicle electrical consumption", 
+                      "//div[h3[contains(text(), 'Vehicle electrical consumption')]]", 
+                      "//div[h3[contains(text(), 'Vehicle electrical consumption')]]//button[@id='VehicleElectricalConsumption_Collapse']/i")
+    
+#Vehicle usage per engine report
+def ensure_vehicle_usage_perengine_panel_open(driver):
+    ensure_panel_open(driver, 
+                      "Vehicle usage per engine sessions", 
+                      "//div[h3[contains(text(), 'Vehicle usage per engine sessions')]]", 
+                      "//div[h3[contains(text(), 'Vehicle usage per engine sessions')]]//button[@id='VehicleUsuageTable_Collapse']/i")
+
+#Fuel supplier - 3 stck
+def ensure_fuel_supplier_panel_open(driver):
+    ensure_panel_open(driver, 
+                      "Fuel supplier summary", 
+                      "//div[h3[contains(text(), 'Fuel supplier summary')]]", 
+                      "//div[h3[contains(text(), 'Fuel supplier summary')]]//button[@id='CostPerSupplier_Collapse']/i")
+    
