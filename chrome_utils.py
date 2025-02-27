@@ -22,8 +22,9 @@ def close_existing_chrome():
 def setup_browser():
     """Elindítja és beállítja a Chrome böngészőt, majd megnyitja a szükséges menüket."""
     user_name = os.environ.get("USERNAME") or os.getlogin()
-    print("")
-    print("A Fleet KPI adatok letöltése folyamatban van, kérlek várj.")
+    download_path = f"C:\\Users\\{user_name}\\Downloads"
+
+    print("\nA Fleet KPI adatok letöltése folyamatban van, kérlek várj.")
     print(f"👤 USERNAME: {user_name}")
 
     chrome_profile_path = f"C:\\Users\\{user_name}\\AppData\\Local\\Google\\Chrome\\User Data"
@@ -38,6 +39,16 @@ def setup_browser():
     options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://tata.fleetmanager.guentner.local/")
     options.add_experimental_option("prefs", {"safebrowsing.enabled": True})
     
+    # Letöltési beállítások
+    prefs = {
+        "download.default_directory": download_path,
+        "download.prompt_for_download": False,  # Ne kérdezzen rá a mentésre
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True
+    }
+
+    options.add_experimental_option("prefs", prefs)
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get("http://tata.fleetmanager.guentner.local/")
     wait = WebDriverWait(driver, 5)
@@ -45,7 +56,7 @@ def setup_browser():
 
     interact_with_page(driver)
     
-    return driver, user_name
+    return driver, user_name, download_path
 
 def interact_with_page(driver):
     wait = WebDriverWait(driver, 5)

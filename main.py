@@ -19,7 +19,7 @@ from date_utils import fill_date_field, fill_fix_date_field, fill_week_date_fiel
 def Fleet():
 
     close_existing_chrome()
-    driver, user_name =setup_browser()
+    driver, user_name, download_path = setup_browser()
     wait = WebDriverWait(driver, 10)
 
     #Vehicle usage per engine session  ############################################################
@@ -152,10 +152,9 @@ def Fleet():
                                 print(f"Rákattintottam a {company} Export Excel gombjára.")
                                 time.sleep(10)  
 
-                                if wait_for_download(download_path):
-                                    move_latest_file(download_path, target_folder)
-                                else:
-                                    downloaded = False  
+                                latest_file = wait_for_download(download_path)
+                                if latest_file:
+                                    move_latest_file(latest_file, target_folder)
                             
                                 ensure_fuel_supplier_panel_open(driver)
 

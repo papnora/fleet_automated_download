@@ -8,15 +8,16 @@ from selenium.webdriver.support import expected_conditions as EC
 def wait_for_download(download_path, timeout=60):
       while True:
         end_time = time.time() + timeout
+        latest_file = None
 
         while time.time() < end_time:
-            files = os.listdir(download_path)
-            if any(file.endswith(".xls") or file.endswith(".xlsx") for file in files):
-                print("\n✅ Fájl letöltve!")
-                return True
+            files = [f for f in os.listdir(download_path) if f.endswith((".xls", ".xlsx"))]
+            if files:
+                latest_file = max([os.path.join(download_path, f) for f in files], key=os.path.getctime)
+                print(f"\n✅ Fájl letöltve: {os.path.basename(latest_file)}")
+                return latest_file  # Visszaadja a letöltött fájl teljes elérési útját
             time.sleep(2)
-        print("")
-        print("⏳ Időtúllépés: A fájl nem töltődött le időben.")
+        print("\n⏳ Időtúllépés: A fájl nem töltődött le időben.")
 
         # Ha az első próbálkozás sikertelen, újrapróbálkozás 10 perces timeouttal
         if timeout == 600:  # 10 perc már volt, ne próbálkozzunk újra
@@ -24,14 +25,15 @@ def wait_for_download(download_path, timeout=60):
 
         print("🔄 Újrapróbálkozás 10 perces időkorláttal...")
         timeout = 600  # 10 perc
+        return None
 
 def move_latest_file(source, target):
-    files = [os.path.join(source, f) for f in os.listdir(source) if f.endswith((".xls", ".xlsx"))]
-    if files:
-        latest_file = max(files, key=os.path.getctime)  
-        shutil.move(latest_file, os.path.join(target, os.path.basename(latest_file)))
-        print(f"📂 Fájl áthelyezve: {latest_file} → {target}")
-        print("")
+    if source and os.path.exists(source):
+        shutil.move(source, os.path.join(target, os.path.basename(source)))
+        print(f"📂 Fájl áthelyezve: {source} → {target}\n")
+    else:
+        print(f"⚠️ A forrásfájl nem található ({source}), nem lehet áthelyezni.")
+
 
 
 def download(driver, wait, user_name, button_id):
@@ -58,8 +60,9 @@ def download(driver, wait, user_name, button_id):
 
         time.sleep(15)
 
-        if wait_for_download(download_path):
-            move_latest_file(download_path, target_folder)
+        latest_file = wait_for_download(download_path)
+        if latest_file:
+            move_latest_file(latest_file, target_folder)
         else:
             downloaded = False
     
